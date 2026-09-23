@@ -19,7 +19,15 @@
 					"name": "source2"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "pedidos_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -84,7 +92,42 @@
 				"derivedColumn1 window(over(pedido_id),",
 				"     asc(fecha_pedido, true),",
 				"     rn = rank()) ~> window1",
-				"window1 filter(rn==1) ~> filter1"
+				"window1 filter(rn==1) ~> filter1",
+				"exists1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pedido_id as string,",
+				"          fecha_pedido as date,",
+				"          hora_pedido as timestamp,",
+				"          cliente_id as string,",
+				"          sucursal_id as string,",
+				"          canal as string,",
+				"          tipo_servicio as string,",
+				"          estado_pedido as string,",
+				"          promocion_id as string,",
+				"          subtotal as decimal(10,2),",
+				"          costo_delivery as decimal(10,2),",
+				"          descuento as decimal(10,2),",
+				"          impuesto as decimal(10,2),",
+				"          total_pedido as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          pedido_id,",
+				"          cliente_id,",
+				"          sucursal_id,",
+				"          canal,",
+				"          tipo_servicio,",
+				"          estado_pedido,",
+				"          promocion_id",
+				"     )) ~> sink1"
 			]
 		}
 	}

@@ -12,7 +12,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "productos_menu_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -45,7 +53,32 @@
 				"filter1 window(over(producto_id),",
 				"     desc(precio_lista, true),",
 				"     rn = rank()) ~> window1",
-				"window1 filter(rn==1) ~> filter2"
+				"window1 filter(rn==1) ~> filter2",
+				"filter2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          producto_id as string,",
+				"          nombre_producto as string,",
+				"          categoria as string,",
+				"          precio_lista as decimal(10,2),",
+				"          costo_estimado as decimal(10,2),",
+				"          disponible as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          producto_id,",
+				"          nombre_producto,",
+				"          categoria,",
+				"          precio_lista,",
+				"          disponible",
+				"     )) ~> sink1"
 			]
 		}
 	}

@@ -26,7 +26,15 @@
 					"name": "source3"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "calificaciones_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -88,7 +96,32 @@
 				"     broadcast: 'auto')~> exists1",
 				"exists1, source3 exists(source1@cliente_id == source3@cliente_id,",
 				"     negate:false,",
-				"     broadcast: 'auto')~> exists2"
+				"     broadcast: 'auto')~> exists2",
+				"exists2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          calificacion_id as string,",
+				"          pedido_id as string,",
+				"          cliente_id as string,",
+				"          fecha_calificacion as date,",
+				"          puntuacion as integer,",
+				"          comentario as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          calificacion_id,",
+				"          pedido_id,",
+				"          cliente_id,",
+				"          puntuacion,",
+				"          comentario",
+				"     )) ~> sink1"
 			]
 		}
 	}

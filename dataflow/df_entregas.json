@@ -19,7 +19,15 @@
 					"name": "source2"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "entregas_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -60,7 +68,34 @@
 				"derivedColumn1 filter(isNull(hora_entrega) || hora_entrega >= hora_salida) ~> filter1",
 				"filter1, source2 exists(source1@repartidor_id == source2@repartidor_id,",
 				"     negate:false,",
-				"     broadcast: 'auto')~> exists1"
+				"     broadcast: 'auto')~> exists1",
+				"exists1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_id as string,",
+				"          pedido_id as string,",
+				"          repartidor_id as string,",
+				"          hora_salida as timestamp,",
+				"          hora_entrega as timestamp,",
+				"          tiempo_entrega_min as integer,",
+				"          distancia_km as decimal(10,2),",
+				"          estado_entrega as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_id,",
+				"          pedido_id,",
+				"          repartidor_id,",
+				"          tiempo_entrega_min,",
+				"          estado_entrega",
+				"     )) ~> sink1"
 			]
 		}
 	}

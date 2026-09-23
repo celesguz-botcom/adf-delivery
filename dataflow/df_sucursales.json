@@ -19,7 +19,15 @@
 					"name": "source2"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "sucursales_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -57,7 +65,37 @@
 				"          direccion = iif(isNull(direccion), 'Sin dirección registrada', trim(direccion))) ~> derivedColumn1",
 				"derivedColumn1, source2 exists(source1@restaurante_id == source2@restaurante_id,",
 				"     negate:false,",
-				"     broadcast: 'auto')~> exists1"
+				"     broadcast: 'auto')~> exists1",
+				"exists1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          sucursal_id as string,",
+				"          restaurante_id as string,",
+				"          nombre_sucursal as string,",
+				"          ciudad as string,",
+				"          zona as string,",
+				"          direccion as string,",
+				"          capacidad_mesas as integer,",
+				"          tiene_delivery as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          sucursal_id,",
+				"          restaurante_id,",
+				"          nombre_sucursal,",
+				"          ciudad,",
+				"          zona,",
+				"          direccion,",
+				"          capacidad_mesas,",
+				"          tiene_delivery",
+				"     )) ~> sink1"
 			]
 		}
 	}

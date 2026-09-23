@@ -19,7 +19,15 @@
 					"name": "source2"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "inventario_diario_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -63,7 +71,34 @@
 				" - toInteger(salidas)) == toInteger(stock_final)) ~> filter1",
 				"filter1, source2 exists(source1@producto_id == source2@producto_id,",
 				"     negate:false,",
-				"     broadcast: 'auto')~> exists1"
+				"     broadcast: 'auto')~> exists1",
+				"exists1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          inventario_id as string,",
+				"          fecha_inventario as date,",
+				"          sucursal_id as string,",
+				"          producto_id as string,",
+				"          stock_inicial as integer,",
+				"          entradas as integer,",
+				"          salidas as integer,",
+				"          stock_final as integer,",
+				"          punto_reorden as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          inventario_id,",
+				"          sucursal_id,",
+				"          producto_id,",
+				"          salidas",
+				"     )) ~> sink1"
 			]
 		}
 	}

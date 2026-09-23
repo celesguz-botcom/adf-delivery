@@ -26,7 +26,15 @@
 					"name": "source3"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "detalle_pedidos_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -98,7 +106,32 @@
 				"     broadcast: 'auto')~> exists1",
 				"exists1, source3 exists(source1@pedido_id == source3@pedido_id,",
 				"     negate:false,",
-				"     broadcast: 'auto')~> exists2"
+				"     broadcast: 'auto')~> exists2",
+				"exists2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          detalle_id as string,",
+				"          pedido_id as string,",
+				"          producto_id as string,",
+				"          cantidad as integer,",
+				"          precio_unitario as decimal(10,2),",
+				"          descuento_linea as decimal(10,2),",
+				"          total_linea as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          detalle_id,",
+				"          pedido_id,",
+				"          producto_id,",
+				"          precio_unitario",
+				"     )) ~> sink1"
 			]
 		}
 	}

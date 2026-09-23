@@ -12,7 +12,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "clientes_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -43,7 +51,34 @@
 				"derivedColumn1 window(over(cliente_id),",
 				"     asc(fecha_registro, true),",
 				"     rn = rank()) ~> window1",
-				"window1 filter(rn==1) ~> filter1"
+				"window1 filter(rn==1) ~> filter1",
+				"filter1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          cliente_id as string,",
+				"          nombre as string,",
+				"          email as string,",
+				"          telefono as string,",
+				"          ciudad as string,",
+				"          fecha_registro as date,",
+				"          segmento as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          cliente_id,",
+				"          nombre,",
+				"          email,",
+				"          telefono,",
+				"          ciudad,",
+				"          segmento",
+				"     )) ~> sink1"
 			]
 		}
 	}

@@ -19,7 +19,15 @@
 					"name": "source2"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "pagos_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -63,7 +71,31 @@
 				"          estado_pago = iif(isNull(estado_pago), 'Pendiente', trim(estado_pago))) ~> derivedColumn1",
 				"derivedColumn1, source2 exists(source1@pedido_id == source2@pedido_id,",
 				"     negate:false,",
-				"     broadcast: 'auto')~> exists1"
+				"     broadcast: 'auto')~> exists1",
+				"exists1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_id as string,",
+				"          pedido_id as string,",
+				"          fecha_pago as date,",
+				"          metodo_pago as string,",
+				"          estado_pago as string,",
+				"          monto_pagado as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          pago_id,",
+				"          pedido_id,",
+				"          metodo_pago,",
+				"          estado_pago",
+				"     )) ~> sink1"
 			]
 		}
 	}
