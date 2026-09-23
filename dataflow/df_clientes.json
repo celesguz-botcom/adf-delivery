@@ -1,0 +1,50 @@
+{
+	"name": "df_clientes",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "clientes_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "window1"
+				},
+				{
+					"name": "filter1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          cliente_id as string,",
+				"          nombre as string,",
+				"          email as string,",
+				"          telefono as string,",
+				"          ciudad as string,",
+				"          fecha_registro as string,",
+				"          segmento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(nombre = trim(initCap(lower(nombre))),",
+				"          email = iif(isNull(trim(email)) || !regexMatch(email, '^[^@]+@[^@]+\\\\.[^@]+$'),'sin_email@desconocido.bo',trim(lower(email))),",
+				"          ciudad = iif(trim(upper(ciudad))=='SCZ','Santa Cruz de la Sierra',trim(ciudad))) ~> derivedColumn1",
+				"derivedColumn1 window(over(cliente_id),",
+				"     asc(fecha_registro, true),",
+				"     rn = rank()) ~> window1",
+				"window1 filter(rn==1) ~> filter1"
+			]
+		}
+	}
+}

@@ -1,0 +1,52 @@
+{
+	"name": "df_productos_menu",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "productos_menu_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "window1"
+				},
+				{
+					"name": "filter2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          producto_id as string,",
+				"          nombre_producto as string,",
+				"          categoria as string,",
+				"          precio_lista as string,",
+				"          costo_estimado as string,",
+				"          disponible as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(precio_lista = toDecimal(regexReplace(precio_lista, '[^0-9\\\\.\\\\-]', ''), 10, 2),",
+				"          categoria = iif(isNull(categoria), 'Sin categoría', initCap(lower(trim(categoria))))) ~> derivedColumn1",
+				"derivedColumn1 filter(toDecimal(precio_lista)>0) ~> filter1",
+				"filter1 window(over(producto_id),",
+				"     desc(precio_lista, true),",
+				"     rn = rank()) ~> window1",
+				"window1 filter(rn==1) ~> filter2"
+			]
+		}
+	}
+}

@@ -1,0 +1,70 @@
+{
+	"name": "df_pagos",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "pagos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "pedidos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "exists1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pago_id as string,",
+				"          pedido_id as string,",
+				"          fecha_pago as string,",
+				"          metodo_pago as string,",
+				"          estado_pago as string,",
+				"          monto_pagado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          pedido_id as string,",
+				"          fecha_pedido as string,",
+				"          hora_pedido as string,",
+				"          cliente_id as string,",
+				"          sucursal_id as string,",
+				"          canal as string,",
+				"          tipo_servicio as string,",
+				"          estado_pedido as string,",
+				"          promocion_id as string,",
+				"          subtotal as string,",
+				"          costo_delivery as string,",
+				"          descuento as string,",
+				"          impuesto as string,",
+				"          total_pedido as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source1 derive(metodo_pago = iif(trim(lower(metodo_pago))=='wallet', 'Billetera móvil', trim(metodo_pago)),",
+				"          estado_pago = iif(isNull(estado_pago), 'Pendiente', trim(estado_pago))) ~> derivedColumn1",
+				"derivedColumn1, source2 exists(source1@pedido_id == source2@pedido_id,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists1"
+			]
+		}
+	}
+}
